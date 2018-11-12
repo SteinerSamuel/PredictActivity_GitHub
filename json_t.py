@@ -1,8 +1,10 @@
 import json
+import datetime
 import csv
 
 labeled_data = []
 
+"""
 with open('ESEM - Dataset.csv', newline='')as esemdata:
     labeled_data = csv.DictReader(esemdata, delimiter=',')
 
@@ -21,12 +23,24 @@ with open('ESEM - Dataset.csv', newline='')as esemdata:
 print(active)
 print(FSE)
 print(Archived)
-""""
-with open("test2.json") as json_test:
+"""
+with open("commit_test.json") as json_test:
     data = json.load(json_test)
 y = 0
+datet = datetime.datetime.strptime('1996-12-31', '%Y-%m-%d'
+                                   )
 for x in data:
-    y+=1
-    print(y)
-    print(x)
-"""
+    datestr = x['commit']['author']['date'].split('T')[0]
+    newdate = datetime.datetime.strptime(datestr, '%Y-%m-%d')
+    if newdate > datet:
+        datet = newdate
+
+print(datet)
+
+dates = []
+i = 8
+while i > 0:
+    dates += dates + datet.timedelta(days=-31*i)
+    i -= 1
+
+print(dates)

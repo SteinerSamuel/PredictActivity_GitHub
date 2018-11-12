@@ -54,7 +54,8 @@ index = 1
 finished = False
 data = []
 while not finished:
-    url = 'https://api.github.com/repos/'+test_repo[0]+'/'+ test_repo[1]+ '/commits?per_page=100&page=' + str(index)
+    # url = 'https://api.github.com/repos/'+test_repo[0]+'/'+ test_repo[1]+ '/pulls?state=all&per_page=100&page=' + str(index)
+    url = 'https://api.github.com/users/' + test_repo[0] + '/repos?per_page=100&page=' + str(index)
     r = requests.get(url, auth=(user_pass['Username'], user_pass['Password']))
     print(r.json())
     if r.json() == []:
@@ -65,5 +66,5 @@ while not finished:
 
 
 
-with open('test2.json', 'w') as json_test:
+with open('test.json', 'w') as json_test:
     json.dump(data, json_test)
