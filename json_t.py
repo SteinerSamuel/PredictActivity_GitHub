@@ -48,7 +48,7 @@ def create_labels(title, length, interval):
     :param title: the title of the feature
     :param length: the amount of months that its looking at
     :param interval: the amount of months each data point looks at
-    :return:
+    :return: returns a list of labels
     """
     labels = []
     leng = length
@@ -65,7 +65,7 @@ def get_commit_data(dates, data, labels):
     :param labels:  the labels for the data points
     :return: returns a dictionary with the data points
     """
-    # makes an empty dictionary for the data
+    # makes an emp  ty dictionary for the data
     data_points = {}
     for x in labels:
         data_points[x] = 0
@@ -77,6 +77,7 @@ def get_commit_data(dates, data, labels):
             # splits the string from the data to get the date and remove the time
             date_str = x['commit']['author']['date'].split('T')[0]
             compare_date = datetime.datetime.strptime(date_str, '%Y-%m-%d')
+            # adds 1 to the data point if it fits within
             if compare_date <= dates[i]:
                 if compare_date > dates[i+1]:
                     data_points[labels[i]] += 1
@@ -89,11 +90,75 @@ def get_max_days_wo_commit(dates, data, labels):
     data_points = {}
     for x in labels:
         data_points[x] = 0
-
     i = 0
-    while i < len(dates) -1:
-        i+= 1
+    while i < len(dates) - 1:
+        dates_betweens = []
+        for x in data:
+            date_str = x['commit']['author']['date'].split('T')[0]
+            compare_date = datetime.datetime.strptime(date_str, '%Y-%m-%d')
+            if compare_date <= dates[i]:
+                if compare_date > dates[i+1]:
+                    dates_betweens += [compare_date]
 
+        dates_betweens += [dates[i], dates[i+1]]
+        dates_betweens.sort()
+
+        j = 0
+        max_days = 0
+        while j < len(dates_betweens) - 1:
+            days = dates_betweens[j] - dates_betweens[j+1]
+            max_days = (abs(days.days)) if abs(days.days) > max_days else max_days
+            # max_days = days if days > max_days else max_days
+            j += 1
+
+        data_points[labels[i]] = max_days
+
+        i += 1
+
+
+    return data_points
+
+
+def get_contrib(dates, data, labels_m, labels_d, labels_o, labels_n, owner):
+    data_points = {}
+    for label in labels_m:
+        data_points[label] = 0
+
+    for label in labels_d:
+        data_points[label] = 0
+
+    for label in labels_o:
+        data_points[label] = 0
+
+    for label in labels_n:
+        data_points[label] =0
+
+    i = len(dates) - 1
+    contrib = {}
+    while i > 0:
+        contribs_period =[]
+        new_contrib = 0
+        # new contributors and making the data
+        for x in data:
+            date_str = x['commit']['author']['date'].split('T')[0]
+            compare_date = datetime.datetime.strptime(date_str, '%Y-%m-%d')
+            if compare_date <= dates[i - 1]:
+                if compare_date > dates[i]:
+                    try:
+                        y = x['author']['login']
+                    except TypeError:
+                        y = x['commit']['author']['name']
+                    if y in contrib:
+                        contrib[y] += 1
+                    else:
+                        contrib[y] = 0
+                        new_contrib += 1
+                    if y not in contribs_period:
+                        contribs_period += [y]
+        print(len(contrib))
+        print(len(contribs_period))
+        print(new_contrib)
+        i -= 1
     return data_points
 
 
@@ -221,7 +286,7 @@ if __name__ == '__main__':
 
     length = 24
     interval = 3
-    ### Commit DATA
+    # Commit DATA
     with open("commit_test.json") as json_test:
         data = json.load(json_test)
 
@@ -235,7 +300,23 @@ if __name__ == '__main__':
     for label in commit_labels:
         json_df[label] = [data_points[label]]
 
-    ### forks DATA
+    commit_days_labels = create_labels('max_days_since', length, interval)
+
+    data_points = get_max_days_wo_commit(dates,data, commit_days_labels)
+
+    for label in commit_days_labels:
+        json_df[label] = [data_points[label]]
+
+
+    max_commit_labels = create_labels('max_commit', length, interval)
+    owner_commit_labels = create_labels('owner_commit', length, interval)
+    distinct_commit_labels = create_labels('dis_commit', length, interval)
+    new_commit_labels = create_labels('new_commit', length, interval)
+
+    data_points = get_contrib(dates, data, max_commit_labels, distinct_commit_labels, owner_commit_labels,
+                              new_commit_labels, 'itsabot')
+
+    # Forks DATA
     with open("forks_test.json") as json_test:
         data = json.load(json_test)
 
@@ -245,7 +326,7 @@ if __name__ == '__main__':
     for label in fork_labels:
         json_df[label] = [data_points[label]]
 
-    ### ISSUES DATA
+    # ISSUES DATA
     with open("issues_test.json") as json_test:
         data = json.load(json_test)
 
@@ -260,7 +341,7 @@ if __name__ == '__main__':
     for label in o_issues_labels:
         json_df[label] = [data_points[label]]
 
-    ### PULLS DATA
+    # PULLS DATA
     with open("pulls_Test.json") as json_test:
         data = json.load(json_test)
 
