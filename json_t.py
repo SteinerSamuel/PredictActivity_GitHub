@@ -1,7 +1,9 @@
+"""
+This is a module to manipulate GitHub API information
+"""
 import json
 import datetime
 import pandas as pd
-
 
 def get_last_date(data):
     """
@@ -134,9 +136,9 @@ def get_contrib(dates, data, labels_m, labels_d, labels_o, labels_n, owner):
         data_points[label] =0
 
     i = len(dates) - 1
-    contrib = {}
+    contrib = []
     while i > 0:
-        contribs_period =[]
+        contribs_period = {}
         new_contrib = 0
         # new contributors and making the data
         for x in data:
@@ -148,16 +150,23 @@ def get_contrib(dates, data, labels_m, labels_d, labels_o, labels_n, owner):
                         y = x['author']['login']
                     except TypeError:
                         y = x['commit']['author']['name']
-                    if y in contrib:
-                        contrib[y] += 1
-                    else:
-                        contrib[y] = 0
+                    if y not in contrib:
+                        contrib += [y]
                         new_contrib += 1
-                    if y not in contribs_period:
-                        contribs_period += [y]
-        print(len(contrib))
-        print(len(contribs_period))
-        print(new_contrib)
+                    if y in contribs_period:
+                        contribs_period[y] += 1
+                    else:
+                        contribs_period[y] = 1
+        data_points[labels_d[i-1]] = len(contribs_period)
+        try:
+            data_points[labels_m[i-1]] = contribs_period[max(contribs_period)]
+        except ValueError:
+            data_points[labels_m[i-1]] = 0
+        try:
+            data_points[labels_o[i-1]] = contribs_period[owner]
+        except KeyError:
+            data_points[labels_o[i-1]] = 0
+        data_points[labels_n[i-1]] = new_contrib
         i -= 1
     return data_points
 
@@ -280,6 +289,27 @@ def get_pull_data(label_o, label_c, label_m, dates, data):
     return data_points
 
 
+def get_owner_data(labels, dates, data):
+    data_points = {}
+    for x in labels:
+        data_points[x] = 0
+
+    # gets the length of the date -1 which should be equal to length//interval
+    i = 0
+    while i < len(dates) - 1:
+        for x in data:
+            # splits the string from the data to get the date and remove the time
+            date_str = x['created_at'].split('T')[0]
+            compare_date = datetime.datetime.strptime(date_str, '%Y-%m-%d')
+            # adds 1 to the data point if it fits within
+            if compare_date <= dates[i]:
+                if compare_date > dates[i + 1]:
+                    data_points[labels[i]] += 1
+        i += 1
+
+    return data_points
+
+# this should only be run as main to test with the provided test data
 if __name__ == '__main__':
     json_df = {'repository_name': []}
     json_df['repository_name'] += ['itsabot/itsabot']
@@ -315,6 +345,19 @@ if __name__ == '__main__':
 
     data_points = get_contrib(dates, data, max_commit_labels, distinct_commit_labels, owner_commit_labels,
                               new_commit_labels, 'itsabot')
+
+    for label in max_commit_labels:
+        json_df[label] = [data_points[label]]
+
+    for label in owner_commit_labels:
+        json_df[label] = [data_points[label]]
+
+    for label in distinct_commit_labels:
+        json_df[label] = [data_points[label]]
+
+    for label in new_commit_labels:
+        json_df[label] = [data_points[label]]
+
 
     # Forks DATA
     with open("forks_test.json") as json_test:
@@ -358,6 +401,17 @@ if __name__ == '__main__':
         json_df[label] = [data_points[label]]
 
     for label in m_pull_label:
+        json_df[label] = [data_points[label]]
+
+    # owner DATA
+    with open('test.json') as json_test:
+        data = json.load(json_test)
+
+    owner_labels = create_labels('owner_projects', length, interval)
+
+    data_points = get_owner_data(owner_labels, dates, data)
+
+    for label in owner_labels:
         json_df[label] = [data_points[label]]
 
     print(json_df)
