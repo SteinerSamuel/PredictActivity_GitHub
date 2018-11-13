@@ -317,7 +317,7 @@ if __name__ == '__main__':
     length = 24
     interval = 3
     # Commit DATA
-    with open("commit_test.json") as json_test:
+    with open("test_files/commit_test.json") as json_test:
         data = json.load(json_test)
 
     last_date = get_last_date(data)
@@ -360,7 +360,7 @@ if __name__ == '__main__':
 
 
     # Forks DATA
-    with open("forks_test.json") as json_test:
+    with open("test_files/forks_test.json") as json_test:
         data = json.load(json_test)
 
     fork_labels = create_labels('forks', length, interval)
@@ -370,7 +370,7 @@ if __name__ == '__main__':
         json_df[label] = [data_points[label]]
 
     # ISSUES DATA
-    with open("issues_test.json") as json_test:
+    with open("test_files/issues_test.json") as json_test:
         data = json.load(json_test)
 
     o_issues_labels = create_labels('open_issues', length, interval)
@@ -385,7 +385,7 @@ if __name__ == '__main__':
         json_df[label] = [data_points[label]]
 
     # PULLS DATA
-    with open("pulls_Test.json") as json_test:
+    with open("test_files/pulls_Test.json") as json_test:
         data = json.load(json_test)
 
     o_pull_label = create_labels('open_pull', length, interval)
@@ -404,7 +404,7 @@ if __name__ == '__main__':
         json_df[label] = [data_points[label]]
 
     # owner DATA
-    with open('test.json') as json_test:
+    with open('test_files/test.json') as json_test:
         data = json.load(json_test)
 
     owner_labels = create_labels('owner_projects', length, interval)
