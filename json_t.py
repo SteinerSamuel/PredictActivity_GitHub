@@ -28,6 +28,10 @@ def get_list_of_dates(last_date, length, interval):
     :param interval: the amount of months each data point looks at
     :return:
     """
+
+    if last_date.day >= 28:
+        last_date = last_date.replace(day=28)
+
     dates = [last_date]  # creates the list of datetime.datetime objects
     m = last_date.month  # sets the initial month
     data_points = length//interval  # number of data points
@@ -147,8 +151,10 @@ def get_contrib(dates, data, labels_m, labels_d, labels_o, labels_n, owner):
             if compare_date <= dates[i - 1]:
                 if compare_date > dates[i]:
                     try:
-                        y = x['author']['login']
+                        y = x['authror']['login']
                     except TypeError:
+                        y = x['commit']['author']['name']
+                    except KeyError:
                         y = x['commit']['author']['name']
                     if y not in contrib:
                         contrib += [y]
