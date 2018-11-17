@@ -45,7 +45,7 @@ with open('ESEM - Dataset.csv', newline='')as esemdata:
 
 months = 24
 interval = 3
-index = 0
+index = 1
 
 while index < len(Data_frame['Repository']):
     repository_split = Data_frame['Repository'][index].split('/')
