@@ -12,6 +12,11 @@ import time
 
 
 def get_Git_data(user_pass, url):
+    """
+    :param user_pass: A Dict of the user name and password for the GitHub API
+    :param url:  The URL for the GitHuB api REST call
+    :return:  returns a json object with the information from the GitHub API
+    """
     index = 1
     finished = False
     data = []
@@ -43,10 +48,12 @@ with open('ESEM - Dataset.csv', newline='')as esemdata:
         Data_frame['Repository'] += [x['Repository']]
         Data_frame['Status'] += [x['Status']]
 
+# sets the interval month and index for the query
 months = 24
 interval = 3
 index = 1
 
+# creates the URLS which are going to be used in the GitHub API
 while index < len(Data_frame['Repository']):
     repository_split = Data_frame['Repository'][index].split('/')
     print(repository_split[0])
@@ -179,7 +186,8 @@ while index < len(Data_frame['Repository']):
     print(Data_frame)
     index += 1
 
+# makes a result.csv for correlation analysis.
 df = pd.DataFrame(Data_frame)
 df.set_index('Repository', inplace=True)
 
-df.to_csv('Data.csv')
+df.to_csv('/correlationAnalysis/result.csv')
