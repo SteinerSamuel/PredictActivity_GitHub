@@ -24,7 +24,7 @@ def get_Git_data(user_pass, url):
         url_index = url + str(index)
         r = requests.get(url_index, auth=(user_pass['Username'], user_pass['Password']))
         # print(r.json())
-        print(index)
+        # print(index)
         if r.json() != {'message': 'Server Error'}:
             if r.json() == []:
                 finished = True
